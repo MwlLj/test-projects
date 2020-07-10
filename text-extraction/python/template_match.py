@@ -90,8 +90,7 @@ def get_value_v1(src_path, template_root):
     # sorted(mydict.items(),key = lambda mydict:mydict[1],reverse= False)
 
 # 将原图分割成一个个的数字, 然后每一个数字都和所有的模板匹配, 对所有的匹配结果进行排序, 得到最大值
-def get_value_v2(src_path, templates):
-    img = cv2.imread(src_path)
+def get_value_v2(img, templates):
     rois = split_number(img)
     result = []
     for roi in rois:
@@ -104,26 +103,34 @@ def get_value_v2(src_path, templates):
         order = sorted(unorder, key = lambda item:item[0], reverse = True)
         if len(order) == 0:
             continue
-        _, max_value = order[0]
+        k, max_value = order[0]
         if max_value == "point":
             max_value = "."
         if max_value == "colon":
             max_value = ":"
         if max_value == "mid-line":
             max_value = "-"
-        result.append(max_value)
-    result = "".join(result)
+        if k > 0.5:
+            result.append(max_value)
+        else:
+            result.append(None)
     return result
+
+def get_value_v2_use_path(src_path, templates):
+    img = cv2.imread(src_path)
+    return get_value_v2(img, templates)
 
 def get_value_v1_test():
     get_value_v1("template_test/test1.jpg", "template")
 
 def get_value_v2_test():
     ts = load_template("template")
-    r = get_value_v2("template_test/test2.jpg", ts)
+    r = get_value_v2_use_path("template_test/test2.jpg", ts)
     print(r)
 
-# get_value_v1_test()
-get_value_v2_test()
+if __name__ == '__main__':
+    # get_value_v1_test()
+    get_value_v2_test()
+    # template_match_path_input("template_test/test1.jpg", "template/8.jpg")
+    pass
 
-# template_match_path_input("template_test/test1.jpg", "template/8.jpg")
